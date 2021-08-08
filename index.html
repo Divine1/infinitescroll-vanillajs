@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>vanillajs</title>
+    <style>
+        h1{
+            text-align: center;
+        }
+        .items{
+            height: 70vh;
+            width: 50vw;
+            overflow-y: scroll;
+            margin: 0 auto;
+        }
+        .item{
+            padding: 5px;
+            background-color: orange;
+        }
+        .title{
+            text-transform: uppercase;
+            font-weight: bold;
+            padding: 5px;
+        }
+        .description{
+            padding: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Countries</h1>
+        <div class="items" id="items">
+
+        </div>
+    </div>
+</body>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+<script>
+    const createElement = function(content){
+
+        for(let i=0;i<content.length;i++){
+            let element = content[i];
+            let divout = document.createElement("div");
+            divout.className="item";
+            let divtitle = document.createElement("div");
+            divtitle.innerHTML = element.name;
+            divtitle.className="title";
+            let divcontent = document.createElement("div");
+            divcontent.innerHTML=element.description;
+            divcontent.className="description";
+
+            divout.appendChild(divtitle);
+            divout.appendChild(divcontent);
+
+            document.getElementById("items").appendChild(divout);
+        }
+    }
+
+    const getdataFromApi = function(page){
+        let limit = 5;
+        let url=`http://localhost:3000/countries?page=${page}&limit=${limit}`;
+        axios.get(url).then(apidata=>{
+            let response = apidata.data;
+            totalPages = response.totalPages;
+            console.log("response ",response);
+            createElement(response.content)
+        }).catch(err=>{
+            console.error(err);
+        })
+    }
+    document.getElementById("items").addEventListener("scroll",function(event){
+        //console.log("event ",event.target);
+        let scrollHeight = event.target.scrollHeight;
+        let scrollTop = event.target.scrollTop;
+        let clientHeight = event.target.clientHeight;
+
+        // console.log("scrollHeight ",scrollHeight);
+        // console.log("scrollTop ",scrollTop);
+        // console.log("clientHeight ",clientHeight);
+
+        let scrollPosition = scrollHeight - (scrollTop + clientHeight);
+        if(scrollPosition == 0 && totalPages > currentPage){
+            currentPage++;
+            getdataFromApi(currentPage);
+        }
+    })
+    let currentPage=1;
+    let totalPages = 0;
+    getdataFromApi(currentPage);
+</script>
+</html>
